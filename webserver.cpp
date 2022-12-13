@@ -166,32 +166,32 @@ void WebServer::timer(int connfd, struct sockaddr_in client_address)
     //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
     users_timer[connfd].address = client_address;
     users_timer[connfd].sockfd = connfd;
-    util_timer *timer = new util_timer;
+    tw_timer *timer = new tw_timer;
+    // util_timer *timer = new util_timer;
     timer->user_data = &users_timer[connfd];
     timer->cb_func = cb_func;
-    time_t cur = time(NULL);
-    timer->expire = cur + 3 * TIMESLOT;
+    time_t cur = time(NULL);  
     users_timer[connfd].timer = timer;
-    utils.m_timer_lst.add_timer(timer);
+    utils.m_time_wheel.add_timer(cur + 3 * TIMESLOT);
 }
 
 //若有数据传输，则将定时器往后延迟3个单位
 //并对新的定时器在链表上的位置进行调整
-void WebServer::adjust_timer(util_timer *timer)
-{
-    time_t cur = time(NULL);
-    timer->expire = cur + 3 * TIMESLOT;
-    utils.m_timer_lst.adjust_timer(timer);
+// void WebServer::adjust_timer(util_timer *timer) //
+// {
+//     time_t cur = time(NULL); //获取当前时间
+//     timer->expire = cur + 3 * TIMESLOT; //重新设置超时时间
+//     utils.m_tw_timer.adjust_timer(timer); //调整定时器在链表中的位置
 
-    LOG_INFO("%s", "adjust timer once");
-}
+//     LOG_INFO("%s", "adjust timer once");
+// }
 
-void WebServer::deal_timer(util_timer *timer, int sockfd)
+void WebServer::deal_timer(tw_timer *timer, int sockfd)
 {
     timer->cb_func(&users_timer[sockfd]);
     if (timer)
     {
-        utils.m_timer_lst.del_timer(timer);
+        utils.m_time_wheel.del_timer(timer);
     }
 
     LOG_INFO("close fd %d", users_timer[sockfd].sockfd);
@@ -284,10 +284,10 @@ void WebServer::dealwithread(int sockfd)
     //reactor
     if (1 == m_actormodel)
     {
-        if (timer)
-        {
-            adjust_timer(timer);
-        }
+        // if (timer)
+        // {
+        //     adjust_timer(timer);
+        // }
 
         //若监测到读事件，将该事件放入请求队列
         m_pool->append(users + sockfd, 0);
@@ -316,10 +316,10 @@ void WebServer::dealwithread(int sockfd)
             //若监测到读事件，将该事件放入请求队列
             m_pool->append_p(users + sockfd);
 
-            if (timer)
-            {
-                adjust_timer(timer);
-            }
+            // if (timer)
+            // {
+            //     adjust_timer(timer);
+            // }
         }
         else
         {
@@ -334,10 +334,10 @@ void WebServer::dealwithwrite(int sockfd)
     //reactor
     if (1 == m_actormodel)
     {
-        if (timer)
-        {
-            adjust_timer(timer);
-        }
+        // if (timer)
+        // {
+        //     adjust_timer(timer);
+        // }
 
         m_pool->append(users + sockfd, 1);
 
@@ -362,10 +362,10 @@ void WebServer::dealwithwrite(int sockfd)
         {
             LOG_INFO("send data to the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
 
-            if (timer)
-            {
-                adjust_timer(timer);
-            }
+            // if (timer)
+            // {
+            //     adjust_timer(timer);
+            // }
         }
         else
         {

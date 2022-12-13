@@ -39,12 +39,12 @@ public:
     util_timer() : prev(NULL), next(NULL) {}
 
 public:
-    time_t expire;
+    time_t expire; //任务的超时时间，这里使用绝对时间
     
-    void (* cb_func)(client_data *);
-    client_data *user_data;
-    util_timer *prev;
-    util_timer *next;
+    void (* cb_func)(client_data *); //任务回调函数
+    client_data *user_data; //用户数据
+    util_timer *prev; //指向前一个定时器
+    util_timer *next; //指向后一个定时器
 };
 
 class sort_timer_lst
@@ -53,13 +53,13 @@ public:
     sort_timer_lst();
     ~sort_timer_lst();
 
-    void add_timer(util_timer *timer);
-    void adjust_timer(util_timer *timer);
-    void del_timer(util_timer *timer);
-    void tick();
+    void add_timer(util_timer *timer); //将目标定时器timer添加到链表中
+    void adjust_timer(util_timer *timer);  //调整目标定时器在链表中的位置，这个函数只考虑被调整的定时器的超时时间延长的情况，即该定时器需要往链表的尾部移动
+    void del_timer(util_timer *timer);  //将目标定时器timer从链表中删除
+    void tick(); //SIGALRM信号每次被触发就在其信号处理函数（如果使用统一事件源，则是主函数）中执行一次tick函数，以处理链表上到期的任务
 
 private:
-    void add_timer(util_timer *timer, util_timer *lst_head);
+    void add_timer(util_timer *timer, util_timer *lst_head); //被公有的add_timer和adjust_timer调用，它们表示将目标定时器timer添加到节点lst_head之后的部分链表中
 
     util_timer *head;
     util_timer *tail;
