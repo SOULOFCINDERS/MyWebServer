@@ -53,7 +53,7 @@ public:
 class time_wheel
 {
 public:
-    time_wheel() : cur_slot(0){};  // 初始化当前槽为0
+    time_wheel();  // 初始化当前槽为0
     ~time_wheel();
     tw_timer *add_timer(int timeout); // 添加定时器，定时器的超时时间为timeout
     void del_timer(tw_timer *timer); // 删除目标定时器timer
