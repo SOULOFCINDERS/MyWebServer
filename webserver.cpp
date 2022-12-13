@@ -172,7 +172,7 @@ void WebServer::timer(int connfd, struct sockaddr_in client_address)
     timer->cb_func = cb_func;
     time_t cur = time(NULL);  
     users_timer[connfd].timer = timer;
-    utils.m_time_wheel.add_timer(cur + 3 * TIMESLOT);
+    utils.m_time_wheel.add_timer(3 * TIMESLOT);
 }
 
 //若有数据传输，则将定时器往后延迟3个单位
